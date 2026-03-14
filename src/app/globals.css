@@ -1,0 +1,198 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+:root {
+    /* Elegant Dark with Red Accents Theme */
+    --background: #fffdfd;
+    --foreground: #0a0a0a;
+    --card: #fafafa;
+    --card-foreground: #141414;
+    --popover: #fafafa;
+    --popover-foreground: #141414;
+    --primary: #dc2626;
+    --primary-foreground: #fafafa;
+    --secondary: #1a1a1a;
+    --secondary-foreground: #fafafa;
+    --muted: #1f1f1f;
+    --muted-foreground: #a1a1a1;
+    --accent: #dc2626;
+    --accent-foreground: #fafafa;
+    --destructive: #dc2626;
+    --destructive-foreground: #fafafa;
+    --border: #2a2a2a;
+    --input: #2a2a2a;
+    --ring: #dc2626;
+    --chart-1: #dc2626;
+    --chart-2: #991b1b;
+    --chart-3: #ef4444;
+    --chart-4: #fca5a5;
+    --chart-5: #3d3d3d;
+    --radius: 0.25rem;
+    --sidebar: #0f0f0f;
+    --sidebar-foreground: #fafafa;
+    --sidebar-primary: #dc2626;
+    --sidebar-primary-foreground: #fafafa;
+    --sidebar-accent: #1a1a1a;
+    --sidebar-accent-foreground: #fafafa;
+    --sidebar-border: #2a2a2a;
+    --sidebar-ring: #dc2626;
+
+    /* Custom red colors */
+    --red: #dc2626;
+    --red-light: #ef4444;
+    --red-dark: #991b1b;
+    --cream: #f5f0e8;
+    --charcoal: #1a1a1a;
+}
+
+
+@layer base {
+    :root {
+        --font-sans: 'Cormorant Garamond', 'Georgia', serif;
+        --font-serif: 'Cormorant Garamond', 'Georgia', serif;
+        --font-mono: 'Geist Mono', 'Geist Mono Fallback';
+        --color-background: var(--background);
+        --color-foreground: var(--foreground);
+        --color-card: var(--card);
+        --color-card-foreground: var(--card-foreground);
+        --color-popover: var(--popover);
+        --color-popover-foreground: var(--popover-foreground);
+        --color-primary: var(--primary);
+        --color-primary-foreground: var(--primary-foreground);
+        --color-secondary: var(--secondary);
+        --color-secondary-foreground: var(--secondary-foreground);
+        --color-muted: var(--muted);
+        --color-muted-foreground: var(--muted-foreground);
+        --color-accent: var(--accent);
+        --color-accent-foreground: var(--accent-foreground);
+        --color-destructive: var(--destructive);
+        --color-destructive-foreground: var(--destructive-foreground);
+        --color-border: var(--border);
+        --color-input: var(--input);
+        --color-ring: var(--ring);
+        --color-chart-1: var(--chart-1);
+        --color-chart-2: var(--chart-2);
+        --color-chart-3: var(--chart-3);
+        --color-chart-4: var(--chart-4);
+        --color-chart-5: var(--chart-5);
+        --radius-sm: calc(var(--radius) - 4px);
+        --radius-md: calc(var(--radius) - 2px);
+        --radius-lg: var(--radius);
+        --radius-xl: calc(var(--radius) + 4px);
+        --color-sidebar: var(--sidebar);
+        --color-sidebar-foreground: var(--sidebar-foreground);
+        --color-sidebar-primary: var(--sidebar-primary);
+        --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+        --color-sidebar-accent: var(--sidebar-accent);
+        --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+        --color-sidebar-border: var(--sidebar-border);
+        --color-sidebar-ring: var(--sidebar-ring);
+    }
+}
+
+@layer base {
+    * {
+        border-color: hsl(var(--border));
+    }
+
+    body {
+        background-color: hsl(var(--background));
+        color: hsl(var(--foreground));
+    }
+
+    html {
+        scroll-behavior: smooth;
+    }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--background);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--red);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--red-light);
+}
+
+/* Red text utility */
+.text-red {
+    color: var(--red);
+}
+
+.bg-red {
+    background-color: var(--red);
+}
+
+.border-red {
+    border-color: var(--red);
+}
+
+/* Animations */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideInLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-50px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.animate-fade-in-up {
+    animation: fadeInUp 0.8s ease-out forwards;
+}
+
+.animate-fade-in {
+    animation: fadeIn 1s ease-out forwards;
+}
+
+.animate-slide-in-left {
+    animation: slideInLeft 0.8s ease-out forwards;
+}
+
+.animation-delay-200 {
+    animation-delay: 200ms;
+}
+
+.animation-delay-400 {
+    animation-delay: 400ms;
+}
+
+.animation-delay-600 {
+    animation-delay: 600ms;
+}
