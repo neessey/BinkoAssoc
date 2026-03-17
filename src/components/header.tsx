@@ -31,9 +31,15 @@ export function Header() {
         <header
             className={cn(
                 "fixed top-0 left-0 right-0 z-50 transition-all duration-500",
-                isScrolled
-                    ? "bg-background/95 backdrop-blur-md border-b border-border"
-                    : "bg-transparent"
+
+                // Mobile
+                (isScrolled || isMobileMenuOpen)
+                    ? "bg-white/95 backdrop-blur-md border-b border-border"
+                    : "bg-transparent",
+
+                // Desktop override
+                !isScrolled && "lg:bg-transparent",
+                isScrolled && "lg:bg-white/95 lg:backdrop-blur-md lg:border-b lg:border-border"
             )}
         >
             {/* Top Bar */}
