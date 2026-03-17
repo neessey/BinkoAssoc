@@ -192,7 +192,7 @@ export default function BiensPage() {
                                 >
                                     {/* Image */}
                                     <div className={cn(
-                                        "relative aspect-16/10 md:aspect-auto md:h-125 overflow-hidden",
+                                        "relative aspect-[16/10] md:aspect-auto md:h-125 overflow-hidden",
                                         index % 2 === 1 && "md:direction-ltr"
                                     )}>
                                         <div

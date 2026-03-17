@@ -78,8 +78,8 @@ export function HeroSection() {
                     <div className="w-px h-20 bg-linear-to-b from-transparent via-red to-transparent" />
                 </div>
             </div>
-            <div className="hidden lg:block absolute right-10 bottom-10">
-                <img src="/logoA.png" alt="BINKO Logo" className="w-16 h-16" />
+            <div className="absolute right-4 bottom-4 lg:right-10 lg:bottom-10">
+                <img src="/logoA.png" alt="BINKO Logo" className="w-16 h-16 lg:w-16 lg:h-16" />
             </div>
         </section>
     )

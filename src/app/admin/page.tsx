@@ -242,21 +242,38 @@ export default function AdminDashboard() {
                         ) : recentProperties.map((p) => {
                             const TypeIcon = typeLabels[p.type]?.icon || Building2
                             return (
-                                <div key={p.id} className="flex items-center gap-4 px-6 py-4 hover:bg-background transition-colors">
-                                    <div
-                                        className="w-12 h-12 bg-cover bg-center shrink-0"
-                                        style={{ backgroundImage: `url('${p.thumbnail || "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=100"}')` }}
-                                    />
-                                    <div className="flex-1 min-w-0">
-                                        <p className="text-sm font-medium text-foreground truncate">{p.title}</p>
-                                        <div className="flex items-center gap-1 text-xs text-muted-foreground mt-0.5">
-                                            <MapPin className="w-3 h-3 text-red" />
-                                            <span className="truncate">{p.location}</span>
+                                <div
+                                    key={p.id}
+                                    className="flex flex-col sm:flex-row sm:items-center gap-3 px-4 sm:px-6 py-4 hover:bg-background transition-colors"
+                                >
+                                    {/* Image + contenu */}
+                                    <div className="flex gap-3 w-full">
+                                        <div
+                                            className="w-14 h-14 sm:w-12 sm:h-12 bg-cover bg-center shrink-0 rounded"
+                                            style={{
+                                                backgroundImage: `url('${p.thumbnail || "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=100"}')`
+                                            }}
+                                        />
+
+                                        <div className="flex-1 min-w-0">
+                                            <p className="text-sm font-medium text-foreground truncate">
+                                                {p.title}
+                                            </p>
+
+                                            <div className="flex items-center gap-1 text-xs text-muted-foreground mt-0.5">
+                                                <MapPin className="w-3 h-3 text-red shrink-0" />
+                                                <span className="truncate">{p.location}</span>
+                                            </div>
                                         </div>
                                     </div>
-                                    <div className="flex flex-col items-end gap-1 shrink-0">
-                                        <span className="text-xs text-red font-medium">{p.price_label || `${p.price.toLocaleString("fr-FR")} FCFA`}</span>
-                                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
+
+                                    {/* Prix + type */}
+                                    <div className="flex sm:flex-col justify-between sm:items-end w-full sm:w-auto text-xs">
+                                        <span className="text-red font-medium">
+                                            {p.price_label || `${p.price.toLocaleString("fr-FR")} FCFA`}
+                                        </span>
+
+                                        <div className="flex items-center gap-1 text-muted-foreground">
                                             <TypeIcon className="w-3 h-3" />
                                             <span>{typeLabels[p.type]?.label}</span>
                                         </div>
@@ -279,18 +296,31 @@ export default function AdminDashboard() {
                         {recentMessages.length === 0 ? (
                             <p className="text-center py-8 text-muted-foreground text-sm">Aucun message</p>
                         ) : recentMessages.map((m) => (
-                            <div key={m.id} className="flex items-start gap-4 px-6 py-4 hover:bg-background transition-colors">
-                                <div className="w-9 h-9 bg-red/10 flex items-center justify-center shrink-0 mt-0.5">
+                            <div
+                                key={m.id}
+                                className="flex gap-3 px-4 sm:px-6 py-4 hover:bg-background transition-colors"
+                            >
+                                <div className="w-9 h-9 bg-red/10 flex items-center justify-center shrink-0 mt-1 rounded">
                                     <span className="text-red text-xs font-serif font-semibold uppercase">
                                         {m.name.charAt(0)}
                                     </span>
                                 </div>
+
                                 <div className="flex-1 min-w-0">
-                                    <div className="flex items-center justify-between gap-2 mb-0.5">
-                                        <p className="text-sm font-medium text-foreground truncate">{m.name}</p>
-                                        <StatusBadge status={m.status || "nouveau"} />
+                                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 mb-1 w-full">
+                                        <p className="text-sm font-medium text-foreground truncate">
+                                            {m.name}
+                                        </p>
+
+                                        <div className="w-fit shrink-0">
+                                            <StatusBadge status={m.status || "nouveau"} />
+                                        </div>
                                     </div>
-                                    <p className="text-xs text-muted-foreground truncate">{m.message}</p>
+
+                                    <p className="text-xs text-muted-foreground line-clamp-2">
+                                        {m.message}
+                                    </p>
+
                                     <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
                                         <Clock className="w-3 h-3" />
                                         {m.created_at

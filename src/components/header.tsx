@@ -11,8 +11,9 @@ const navigation = [
     { name: "À Propos", href: "/a-propos" },
     { name: "Services", href: "/services" },
     { name: "Nos Biens", href: "/biens" },
-    { name: "Contact", href: "/contact" },
     { name: "Dossiers", href: "/dossier" },
+    { name: "Contact", href: "/contact" },
+
 ]
 
 export function Header() {

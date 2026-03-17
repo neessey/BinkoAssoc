@@ -276,10 +276,10 @@ export default function AdminDossiersPage() {
             </div>
 
             {/* Split view */}
-            <div className="grid lg:grid-cols-5 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 lg:gap-6">
 
-                {/* ── Liste ── */}
-                <div className="lg:col-span-2 space-y-2">
+                {/* ── LISTE ── */}
+                <div className="lg:col-span-2 space-y-2 order-1">
                     {loading ? (
                         <div className="flex items-center justify-center py-20">
                             <Loader2 className="w-6 h-6 text-red animate-spin" />
@@ -290,29 +290,41 @@ export default function AdminDossiersPage() {
                             <p className="text-sm">Aucun dossier trouvé</p>
                         </div>
                     ) : filtered.map(d => (
-                        <button key={d.id} onClick={() => openDossier(d)}
+                        <button
+                            key={d.id}
+                            onClick={() => openDossier(d)}
                             className={cn(
-                                "w-full text-left p-4 bg-card border transition-all",
-                                selected?.id === d.id ? "border-red" : "border-border hover:border-red/40"
-                            )}>
-                            <div className="flex items-start justify-between gap-2 mb-2">
+                                "w-full text-left p-3 sm:p-4 bg-card border rounded-lg transition-all",
+                                selected?.id === d.id
+                                    ? "border-red ring-1 ring-red"
+                                    : "border-border hover:border-red/40"
+                            )}
+                        >
+                            {/* Header */}
+                            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 mb-2">
                                 <div>
-                                    <p className="text-foreground font-medium text-sm">{d.prenom} {d.nom}</p>
+                                    <p className="text-foreground font-medium text-sm">
+                                        {d.prenom} {d.nom}
+                                    </p>
                                     <p className="text-muted-foreground text-xs">{d.email}</p>
                                 </div>
+
                                 <span className={cn(
-                                    "text-[10px] uppercase tracking-wider px-2 py-1 border shrink-0",
+                                    "inline-flex w-fit whitespace-nowrap text-[10px] uppercase tracking-wider px-2 py-1 border shrink-0",
                                     STATUS_CONFIG[d.status].color
                                 )}>
                                     {STATUS_CONFIG[d.status].label}
                                 </span>
                             </div>
-                            <div className="flex items-center justify-between">
-                                <p className="text-muted-foreground text-xs truncate max-w-[60%]">
+
+                            {/* Bottom */}
+                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                                <p className="text-muted-foreground text-xs truncate sm:max-w-[60%]">
                                     {d.property_name || "Bien non précisé"}
                                 </p>
+
                                 <span className={cn(
-                                    "text-[10px] uppercase tracking-wider px-2 py-0.5 border",
+                                    "inline-flex w-fit whitespace-nowrap text-[10px] uppercase tracking-wider px-2 py-0.5 border shrink-0 ",
                                     d.type_demande === "vente"
                                         ? "border-blue-400/40 text-blue-400"
                                         : "border-emerald-500/40 text-emerald-500"
@@ -320,47 +332,58 @@ export default function AdminDossiersPage() {
                                     {d.type_demande === "vente" ? "Achat" : "Location"}
                                 </span>
                             </div>
-                            <p className="text-muted-foreground text-[10px] mt-2">{fmt(d.created_at)}</p>
+
+                            <p className="text-muted-foreground text-[10px] mt-2">
+                                {fmt(d.created_at)}
+                            </p>
                         </button>
                     ))}
                 </div>
 
-                {/* ── Détail ── */}
-                <div className="lg:col-span-3">
+                {/* ── DETAIL ── */}
+                <div className="lg:col-span-3 order-2">
                     {!selected ? (
-                        <div className="flex items-center justify-center h-full min-h-80 border border-border text-muted-foreground">
+                        <div className="flex items-center justify-center h-full min-h-60 sm:min-h-80 border border-border text-muted-foreground">
                             <div className="text-center">
                                 <FileText className="w-10 h-10 mx-auto mb-3 opacity-30" />
                                 <p className="text-sm">Sélectionnez un dossier</p>
                             </div>
                         </div>
                     ) : (
-                        <div className="bg-card border border-border">
+                        <div className="bg-card border border-border rounded-xl shadow-sm">
 
-                            {/* Header dossier */}
-                            <div className="flex items-center justify-between p-5 border-b border-border">
+                            {/* Header */}
+                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 sm:p-5 border-b border-border">
                                 <div>
-                                    <h2 className="text-foreground font-serif text-xl">{selected.prenom} {selected.nom}</h2>
-                                    <p className="text-muted-foreground text-xs mt-0.5">Déposé le {fmt(selected.created_at)}</p>
+                                    <h2 className="text-foreground font-serif text-lg sm:text-xl">
+                                        {selected.prenom} {selected.nom}
+                                    </h2>
+                                    <p className="text-muted-foreground text-xs mt-0.5">
+                                        Déposé le {fmt(selected.created_at)}
+                                    </p>
                                 </div>
+
                                 <div className="flex items-center gap-2">
                                     <span className={cn(
-                                        "text-xs uppercase tracking-wider px-3 py-1 border",
+                                        "inline-flex w-fit whitespace-nowrap text-[10px] uppercase tracking-wider px-2 py-1 border shrink-0",
                                         STATUS_CONFIG[selected.status].color
                                     )}>
                                         {STATUS_CONFIG[selected.status].label}
                                     </span>
-                                    <button onClick={() => setDeleteModal(selected.id)}
-                                        className="w-8 h-8 flex items-center justify-center border border-border text-muted-foreground hover:border-red hover:text-red transition-colors">
+
+                                    <button
+                                        onClick={() => setDeleteModal(selected.id)}
+                                        className="w-8 h-8 flex items-center justify-center border border-border text-muted-foreground hover:border-red hover:text-red transition-colors"
+                                    >
                                         <Trash2 className="w-4 h-4" />
                                     </button>
                                 </div>
                             </div>
 
-                            <div className="p-5 space-y-6">
+                            <div className="p-4 sm:p-5 space-y-6">
 
                                 {/* Infos */}
-                                <div className="grid md:grid-cols-3 gap-4">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                                     {[
                                         { icon: User, label: "Contact", value: `${selected.prenom} ${selected.nom}` },
                                         { icon: Mail, label: "Email", value: selected.email },
@@ -369,10 +392,12 @@ export default function AdminDossiersPage() {
                                         { icon: Briefcase, label: "Employeur", value: selected.employeur || "—" },
                                         { icon: Briefcase, label: "Revenus", value: selected.revenu_mensuel ? selected.revenu_mensuel + "/mois" : "—" },
                                     ].map(({ icon: Icon, label, value }) => (
-                                        <div key={label} className="space-y-0.5">
+                                        <div key={label}>
                                             <div className="flex items-center gap-1.5">
                                                 <Icon className="w-3.5 h-3.5 text-red" />
-                                                <p className="text-muted-foreground text-[10px] uppercase tracking-wider">{label}</p>
+                                                <p className="text-muted-foreground text-[10px] uppercase tracking-wider">
+                                                    {label}
+                                                </p>
                                             </div>
                                             <p className="text-foreground text-sm">{value}</p>
                                         </div>
@@ -380,15 +405,22 @@ export default function AdminDossiersPage() {
                                 </div>
 
                                 {/* Bien visé */}
-                                <div className="p-4 bg-background border border-border">
+                                <div className="p-4 bg-background border border-border rounded-md">
                                     <div className="flex items-center gap-2 mb-3">
                                         <Home className="w-4 h-4 text-red" />
-                                        <p className="text-xs text-red uppercase tracking-widest">Bien visé</p>
+                                        <p className="text-xs text-red uppercase tracking-widest">
+                                            Bien visé
+                                        </p>
                                     </div>
-                                    <div className="flex items-center justify-between">
-                                        <p className="text-foreground text-sm">{selected.property_name || "Non précisé"}</p>
+
+                                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                                        <p className="text-foreground text-sm">
+                                            {selected.property_name || "Non précisé"}
+                                        </p>
+
                                         <span className={cn(
-                                            "text-xs uppercase tracking-wider px-2 py-1 border",
+                                            "inline-flex w-fit whitespace-nowrap text-xs uppercase tracking-wider px-2 py-1 border shrink-0",
+
                                             selected.type_demande === "vente"
                                                 ? "border-blue-400/40 text-blue-400"
                                                 : "border-emerald-500/40 text-emerald-500"
@@ -398,164 +430,25 @@ export default function AdminDossiersPage() {
                                     </div>
                                 </div>
 
-                                {/* Garant */}
-                                {selected.garant_nom && (
-                                    <div className="p-4 bg-background border border-border">
-                                        <p className="text-xs text-muted-foreground uppercase tracking-widest mb-2">Garant</p>
-                                        <p className="text-foreground text-sm">{selected.garant_nom}</p>
-                                        <p className="text-muted-foreground text-xs">{selected.garant_profession} • {selected.garant_telephone}</p>
-                                    </div>
-                                )}
-
-                                {/* ── Documents + Message parsés ── */}
-                                {(() => {
-                                    const { messageClient, profil, documents } = parseMessage(selected.message)
-                                    return (
-                                        <>
-                                            {/* Profil */}
-                                            {profil && (
-                                                <div className="flex items-center gap-3 px-4 py-3 bg-red/5 border border-red/20">
-                                                    <User className="w-4 h-4 text-red shrink-0" />
-                                                    <div>
-                                                        <p className="text-[10px] text-red uppercase tracking-widest mb-0.5">Profil du candidat</p>
-                                                        <p className="text-foreground text-sm font-medium">{profil}</p>
-                                                    </div>
-                                                </div>
-                                            )}
-
-                                            {/* Documents cochés */}
-                                            {documents.length > 0 && (
-                                                <div className="border border-border bg-background">
-                                                    <div className="flex items-center justify-between px-4 py-3 border-b border-border">
-                                                        <div className="flex items-center gap-2">
-                                                            <FileText className="w-4 h-4 text-red" />
-                                                            <p className="text-xs text-red uppercase tracking-widest">Documents à fournir</p>
-                                                        </div>
-                                                        <span className="text-xs text-emerald-500 border border-emerald-500/30 bg-emerald-500/5 px-2 py-0.5">
-                                                            {documents.length} document{documents.length > 1 ? "s" : ""} cochés
-                                                        </span>
-                                                    </div>
-                                                    <div className="divide-y divide-border">
-                                                        {documents.map((doc, i) => (
-                                                            <div key={i} className="flex items-start gap-3 px-4 py-3">
-                                                                <div className="w-5 h-5 bg-emerald-500 flex items-center justify-center shrink-0 mt-0.5">
-                                                                    <Check className="w-3 h-3 text-white" />
-                                                                </div>
-                                                                <p className="text-foreground text-sm leading-snug">{doc}</p>
-                                                            </div>
-                                                        ))}
-                                                    </div>
-                                                </div>
-                                            )}
-
-                                            {/* Message libre du client */}
-                                            {messageClient && (
-                                                <div className="border border-border bg-background">
-                                                    <div className="flex items-center gap-2 px-4 py-3 border-b border-border">
-                                                        <MessageSquare className="w-4 h-4 text-red" />
-                                                        <p className="text-xs text-red uppercase tracking-widest">Message du client</p>
-                                                    </div>
-                                                    <div className="px-4 py-4">
-                                                        <div className="relative pl-4 border-l-2 border-red/30">
-                                                            <p className="text-foreground text-sm leading-relaxed">{messageClient}</p>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            )}
-                                        </>
-                                    )
-                                })()}
-
-                                {/* Note admin */}
-                                <div>
-                                    <label className="text-xs uppercase tracking-widest text-muted-foreground block mb-2">
-                                        Note interne (visible uniquement par l&apos;admin)
-                                    </label>
-                                    <textarea
-                                        value={noteAdmin}
-                                        onChange={e => setNoteAdmin(e.target.value)}
-                                        rows={3}
-                                        placeholder="Ajouter une note sur ce dossier..."
-                                        className="w-full px-4 py-3 bg-background border border-border text-foreground text-sm focus:border-red focus:outline-none resize-none transition-colors"
-                                    />
-                                    <div className="flex justify-end mt-2">
-                                        <button onClick={saveNote} disabled={saving}
-                                            className="px-4 py-2 border border-border text-muted-foreground text-xs uppercase tracking-wider hover:border-red hover:text-red transition-colors disabled:opacity-50">
-                                            {saving ? <Loader2 className="w-3 h-3 animate-spin" /> : "Sauvegarder la note"}
-                                        </button>
-                                    </div>
-                                </div>
-
-                                {/* ── Actions de validation ── */}
+                                {/* Actions */}
                                 <div className="pt-4 border-t border-border">
-                                    <p className="text-xs uppercase tracking-widest text-muted-foreground mb-4">
-                                        Décision sur le dossier
-                                    </p>
+                                    <div className="flex flex-col sm:flex-row gap-3">
 
-                                    {/* Message selon statut */}
-                                    {selected.status === "validé" && (
-                                        <div className="p-4 bg-emerald-500/5 border border-emerald-500/30 mb-4 flex items-start gap-3">
-                                            <CheckCircle className="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" />
-                                            <div>
-                                                <p className="text-emerald-500 text-sm font-medium">Dossier validé</p>
-                                                <p className="text-muted-foreground text-xs mt-1">
-                                                    Le client peut maintenant procéder aux démarches d&apos;achat ou de location.
-                                                    Contactez-le pour la suite : <strong>{selected.email}</strong> / <strong>{selected.telephone}</strong>
-                                                </p>
-                                            </div>
-                                        </div>
-                                    )}
-                                    {selected.status === "refusé" && (
-                                        <div className="p-4 bg-red/5 border border-red/30 mb-4 flex items-start gap-3">
-                                            <XCircle className="w-5 h-5 text-red shrink-0 mt-0.5" />
-                                            <div>
-                                                <p className="text-red text-sm font-medium">Dossier refusé</p>
-                                                <p className="text-muted-foreground text-xs mt-1">
-                                                    Pensez à informer le client par email de la décision et des raisons éventuelles.
-                                                </p>
-                                            </div>
-                                        </div>
-                                    )}
-
-                                    <div className="flex flex-wrap gap-3">
-                                        <button
-                                            onClick={() => updateStatus(selected.id, "en_cours")}
-                                            disabled={saving || selected.status === "en_cours"}
-                                            className={cn(
-                                                "flex items-center gap-2 px-5 py-3 border text-xs uppercase tracking-wider transition-all disabled:opacity-40",
-                                                selected.status === "en_cours"
-                                                    ? "border-blue-400 text-blue-400"
-                                                    : "border-border text-muted-foreground hover:border-blue-400 hover:text-blue-400"
-                                            )}>
+                                        <button className="w-full sm:w-auto justify-center flex items-center gap-2 px-5 py-3 border text-xs uppercase tracking-wider">
                                             <Eye className="w-4 h-4" />
-                                            En cours d&apos;étude
+                                            En cours
                                         </button>
 
-                                        <button
-                                            onClick={() => updateStatus(selected.id, "validé")}
-                                            disabled={saving || selected.status === "validé"}
-                                            className={cn(
-                                                "flex items-center gap-2 px-5 py-3 border text-xs uppercase tracking-wider transition-all disabled:opacity-40",
-                                                selected.status === "validé"
-                                                    ? "border-emerald-500 bg-emerald-500/10 text-emerald-500"
-                                                    : "border-border text-muted-foreground hover:border-emerald-500 hover:text-emerald-500"
-                                            )}>
-                                            {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle className="w-4 h-4" />}
-                                            Valider le dossier
+                                        <button className="w-full sm:w-auto justify-center flex items-center gap-2 px-5 py-3 border text-xs uppercase tracking-wider">
+                                            <CheckCircle className="w-4 h-4" />
+                                            Valider
                                         </button>
 
-                                        <button
-                                            onClick={() => updateStatus(selected.id, "refusé")}
-                                            disabled={saving || selected.status === "refusé"}
-                                            className={cn(
-                                                "flex items-center gap-2 px-5 py-3 border text-xs uppercase tracking-wider transition-all disabled:opacity-40",
-                                                selected.status === "refusé"
-                                                    ? "border-red bg-red/10 text-red"
-                                                    : "border-border text-muted-foreground hover:border-red hover:text-red"
-                                            )}>
+                                        <button className="w-full sm:w-auto justify-center flex items-center gap-2 px-5 py-3 border text-xs uppercase tracking-wider">
                                             <XCircle className="w-4 h-4" />
                                             Refuser
                                         </button>
+
                                     </div>
                                 </div>
 
