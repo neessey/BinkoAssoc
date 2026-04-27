@@ -3,7 +3,7 @@ import type { Metadata } from 'next'
 import { Cormorant_Garamond, Montserrat } from 'next/font/google'
 import './globals.css'
 import ClientBody from "./ClientBody";
-// import { Providers } from "./providers";
+import { Providers } from "./providers";
 
 
 const cormorant = Cormorant_Garamond({
@@ -50,9 +50,9 @@ export default function RootLayout({
     return (
         <html lang="fr">
             <body className={`${cormorant.variable} ${montserrat.variable} font-sans antialiased`}>
-                {/* <Providers> */}
-                <ClientBody>{children}</ClientBody>
-                {/* </Providers> */}
+                <Providers>
+                    <ClientBody>{children}</ClientBody>
+                </Providers>
             </body>
         </html>
     )

@@ -5,6 +5,8 @@ import { useState, useEffect } from "react"
 import Link from "next/link"
 import { Menu, X, Phone, Mail } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { useSession } from "next-auth/react"
+import { useRouter } from "next/navigation"
 
 const navigation = [
     { name: "Accueil", href: "/" },
@@ -19,6 +21,8 @@ const navigation = [
 export function Header() {
     const [isScrolled, setIsScrolled] = useState(false)
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+    const { data: session } = useSession()
+    const router = useRouter()
 
     useEffect(() => {
         const handleScroll = () => {
@@ -65,14 +69,12 @@ export function Header() {
                             <span className="font-(--font-sans)  text-xs tracking-wider">contact@binkoassocies.com</span>
                         </a>
                     </div>
-                    <div className="flex items-center gap-4">
-                        <Link
-                            href="#"
-                            className="text-foreground hover:text-red transition-colors font-(--font-sans)  text-xs tracking-wider uppercase"
-                        >
-                            Espace Membre
-                        </Link>
-                    </div>
+                    <button
+                        onClick={() => router.push(session ? "/admin" : "/login")}
+                        className="text-foreground hover:text-red transition-colors font-(--font-sans) text-xs tracking-wider uppercase"
+                    >
+                        {session ? "Admin ↗" : "Espace Admin"}
+                    </button>
                 </div>
             </div>
 

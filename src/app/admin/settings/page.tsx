@@ -7,6 +7,8 @@ import {
     Eye, EyeOff, CheckCircle, Loader2, Phone, MapPin,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { updateAdminPassword } from "@/app/actions/updateAdminPassword"
+import { useSession } from "next-auth/react"
 
 type Tab = "profil" | "securite" | "site" | "notifications"
 
@@ -92,51 +94,112 @@ function TabProfil() {
 }
 
 // ─── Onglet Sécurité ──────────────────────────────────────────
+// À placer en dehors de TabSecurite, par exemple après les imports
+function PasswordInput({
+    label,
+    value,
+    onChange,
+    show,
+    onToggleShow,
+    placeholder = "••••••••",
+}: {
+    label: string
+    value: string
+    onChange: (e: React.ChangeEvent<HTMLInputElement>) => void
+    show: boolean
+    onToggleShow: () => void
+    placeholder?: string
+}) {
+    return (
+        <Field label={label}>
+            <div className="relative">
+                <input
+                    type={show ? "text" : "password"}
+                    value={value}
+                    onChange={onChange}
+                    className={inputCls + " pr-10"}
+                    placeholder={placeholder}
+                />
+                <button
+                    type="button"
+                    onClick={onToggleShow}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                >
+                    {show ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+            </div>
+        </Field>
+    )
+}
+
+// Ensuite, dans TabSecurite, remplacez la définition interne par :
 function TabSecurite() {
-    const [show, setShow] = useState({ current: false, new: false, confirm: false })
+    const [showCurrent, setShowCurrent] = useState(false)
+    const [showNew, setShowNew] = useState(false)
+    const [showConfirm, setShowConfirm] = useState(false)
     const [form, setForm] = useState({ current: "", new: "", confirm: "" })
     const [saving, setSaving] = useState(false)
     const [saved, setSaved] = useState(false)
+    const { data: session } = useSession()
+    const adminEmail = session?.user?.email
     const [error, setError] = useState("")
 
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault()
         setError("")
-        if (form.new !== form.confirm) { setError("Les mots de passe ne correspondent pas."); return }
-        if (form.new.length < 8) { setError("Le mot de passe doit faire au moins 8 caractères."); return }
+        if (form.new !== form.confirm) {
+            setError("Les mots de passe ne correspondent pas.")
+            return
+        }
+        if (form.new.length < 8) {
+            setError("Le mot de passe doit faire au moins 8 caractères.")
+            return
+        }
+
         setSaving(true)
-        await new Promise(r => setTimeout(r, 800))
-        setSaving(false); setSaved(true)
+
+        // Appel à la Server Action
+        const formData = new FormData()
+        formData.append('newPassword', form.new)
+        formData.append('email', adminEmail || '') // ajouter l'email
+        const result = await updateAdminPassword(formData)
+        if (result.error) {
+            setError(result.error)
+            setSaving(false)
+            return
+        }
+
+        // Succès
+        setSaving(false)
+        setSaved(true)
         setForm({ current: "", new: "", confirm: "" })
         setTimeout(() => setSaved(false), 3000)
     }
 
-    const PasswordField = ({ label, k }: { label: string; k: "current" | "new" | "confirm" }) => (
-        <Field label={label}>
-            <div className="relative">
-                <input
-                    type={show[k] ? "text" : "password"}
-                    value={form[k]}
-                    onChange={e => setForm({ ...form, [k]: e.target.value })}
-                    className={inputCls + " pr-10"}
-                    placeholder="••••••••"
-                />
-                <button type="button" onClick={() => setShow({ ...show, [k]: !show[k] })}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
-                    {show[k] ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                </button>
-            </div>
-        </Field>
-    )
-
     return (
         <form onSubmit={handleSubmit} className="space-y-6 max-w-md">
-            <div className="p-4 bg-amber-500/5 border border-amber-500/20 text-sm text-amber-600">
-                ⚠️ Après le changement, mettez à jour le fichier <code className="bg-amber-500/10 px-1">middleware.ts</code> avec le nouveau mot de passe.
-            </div>
-            <PasswordField label="Mot de passe actuel" k="current" />
-            <PasswordField label="Nouveau mot de passe" k="new" />
-            <PasswordField label="Confirmer le mot de passe" k="confirm" />
+            {/* ... le reste du JSX inchangé ... */}
+            <PasswordInput
+                label="Mot de passe actuel"
+                value={form.current}
+                onChange={e => setForm({ ...form, current: e.target.value })}
+                show={showCurrent}
+                onToggleShow={() => setShowCurrent(!showCurrent)}
+            />
+            <PasswordInput
+                label="Nouveau mot de passe"
+                value={form.new}
+                onChange={e => setForm({ ...form, new: e.target.value })}
+                show={showNew}
+                onToggleShow={() => setShowNew(!showNew)}
+            />
+            <PasswordInput
+                label="Confirmer le mot de passe"
+                value={form.confirm}
+                onChange={e => setForm({ ...form, confirm: e.target.value })}
+                show={showConfirm}
+                onToggleShow={() => setShowConfirm(!showConfirm)}
+            />
             {error && <p className="text-sm text-rose-500">{error}</p>}
             <div className="flex justify-end pt-4 border-t border-border">
                 <SaveButton saving={saving} saved={saved} />
@@ -144,7 +207,6 @@ function TabSecurite() {
         </form>
     )
 }
-
 // ─── Onglet Infos du site ─────────────────────────────────────
 function TabSite() {
     const [form, setForm] = useState({
