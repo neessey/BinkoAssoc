@@ -1,5 +1,4 @@
-// lib/supabase.ts
-// Client Supabase partagé + fonctions utilitaires
+
 
 import { createClient } from "@supabase/supabase-js"
 import type { Property, ContactMessage, VisitRequest, Location, PropertyType } from "@/types/database"

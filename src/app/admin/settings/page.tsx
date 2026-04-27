@@ -8,7 +8,7 @@ import {
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { updateAdminPassword } from "@/app/actions/updateAdminPassword"
-import { useSession } from "next-auth/react"
+import { signOut, useSession } from "next-auth/react"
 
 type Tab = "profil" | "securite" | "site" | "notifications"
 
@@ -391,6 +391,7 @@ function TabNotifications() {
 // ─── Page principale ──────────────────────────────────────────
 export default function AdminSettings() {
     const [activeTab, setActiveTab] = useState<Tab>("profil")
+    const { data: session } = useSession()
 
     const tabContent: Record<Tab, React.ReactNode> = {
         profil: <TabProfil />,
@@ -401,12 +402,23 @@ export default function AdminSettings() {
 
     return (
         <div className="p-6 md:p-8 space-y-6">
-            <div>
-                <div className="flex items-center gap-3 mb-2">
-                    <div className="h-px w-8 bg-red" />
-                    <span className="text-red text-xs tracking-[0.3em] uppercase">Configuration</span>
+            <div className="flex justify-between items-center">
+                <div>
+                    <div className="flex items-center gap-3 mb-2">
+                        <div className="h-px w-8 bg-red" />
+                        <span className="text-red text-xs tracking-[0.3em] uppercase">Configuration</span>
+                    </div>
+                    <h1 className="text-3xl font-serif font-light text-foreground">Paramètres</h1>
                 </div>
-                <h1 className="text-3xl font-serif font-light text-foreground">Paramètres</h1>
+                <div className="flex items-center gap-4">
+
+                    <button
+                        onClick={() => signOut({ callbackUrl: '/' })}
+                        className="px-4 py-2 border border-red text-red text-xs uppercase tracking-wider hover:bg-red hover:text-white transition-colors"
+                    >
+                        Déconnexion
+                    </button>
+                </div>
             </div>
 
             <div className="flex flex-col lg:flex-row gap-6">

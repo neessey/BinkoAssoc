@@ -17,11 +17,12 @@ const typeOptions: { value: PropertyType | "all"; label: string }[] = [
     { value: "meuble", label: "Meublé" },
 ]
 
-const emptyForm = {
+// ✅ Utiliser une fonction pour garantir un nouvel objet à chaque appel
+const getEmptyForm = () => ({
     title: "", description: "", location: "", quartier: "",
     type: "location" as PropertyType, price: "", price_label: "",
-    beds: "", baths: "", area: "", room: "", kitchen: "", toilet: "", parking: "", balcon: "", thumbnail: "", featured: false, available: true,
-}
+    beds: "", baths: "", room: "", kitchen: "", toilet: "", parking: "", balcon: "", thumbnail: "", featured: false, available: true,
+})
 
 export default function AdminBiens() {
     const [properties, setProperties] = useState<Property[]>([])
@@ -30,7 +31,7 @@ export default function AdminBiens() {
     const [filterType, setFilterType] = useState<PropertyType | "all">("all")
     const [showForm, setShowForm] = useState(false)
     const [editId, setEditId] = useState<string | null>(null)
-    const [form, setForm] = useState(emptyForm)
+    const [form, setForm] = useState(getEmptyForm())
     const [saving, setSaving] = useState(false)
     const [deleteId, setDeleteId] = useState<string | null>(null)
 
@@ -52,7 +53,9 @@ export default function AdminBiens() {
     })
 
     function openCreate() {
-        setForm(emptyForm); setEditId(null); setShowForm(true)
+        setForm(getEmptyForm())
+        setEditId(null)
+        setShowForm(true)
     }
 
     function openEdit(p: Property) {
@@ -60,44 +63,77 @@ export default function AdminBiens() {
             title: p.title, description: p.description || "", location: p.location,
             quartier: p.quartier || "", type: p.type, price: String(p.price),
             price_label: p.price_label || "", beds: String(p.beds), baths: String(p.baths),
-            area: String(p.area || ""), thumbnail: p.thumbnail || "",
-            room: String(p.room || ""), kitchen: String(p.kitchen || ""), toilet: String(p.toilet || ""), parking: String(p.parking || ""), balcon: String(p.balcon || ""),
+            thumbnail: p.thumbnail || "",
+            room: String(p.room || ""), kitchen: String(p.kitchen || ""), toilet: String(p.toilet || ""),
+            parking: String(p.parking || ""), balcon: String(p.balcon || ""),
             featured: p.featured, available: p.available,
         })
-        setEditId(p.id); setShowForm(true)
+        setEditId(p.id)
+        setShowForm(true)
     }
 
     async function handleSave() {
-        if (!form.title || !form.location || !form.price) return
         setSaving(true)
-        const payload = {
-            title: form.title, description: form.description || null,
-            location: form.location, quartier: form.quartier || null,
-            type: form.type, price: Number(form.price),
-            price_label: form.price_label || null,
-            beds: Number(form.beds) || 0, baths: Number(form.baths) || 0,
-            area: form.area ? Number(form.area) : null,
-            room: form.room ? Number(form.room) : null,
-            kitchen: form.kitchen ? Number(form.kitchen) : null,
-            toilet: form.toilet ? Number(form.toilet) : null,
-            parking: form.parking ? Number(form.parking) : null,
-            balcon: form.balcon ? Number(form.balcon) : null,
 
+        // Validation du titre
+        if (!form.title || form.title.trim() === "") {
+            alert("Le titre est obligatoire")
+            setSaving(false)
+            return
+        }
+
+        // Construction du payload
+        const payload = {
+            title: form.title,
+            description: form.description || null,
+            location: form.location,
+            quartier: form.quartier || null,
+            type: form.type,
+            price: Number(form.price) || 0,
+            price_label: form.price_label || null,
+            beds: Number(form.beds) || 0,
+            baths: Number(form.baths) || 0,
+            room: Number(form.room) || 0,
+            kitchen: Number(form.kitchen) || 0,
+            toilet: Number(form.toilet) || 0,
+            parking: Number(form.parking) || 0,
+            balcon: Number(form.balcon) || 0,
             thumbnail: form.thumbnail || null,
-            featured: form.featured, available: form.available,
+            featured: form.featured,
+            available: form.available,
         }
+
+        let error = null
         if (editId) {
-            await supabase.from("properties").update(payload).eq("id", editId)
+            const { error: updateError } = await supabase
+                .from("properties")
+                .update(payload)
+                .eq("id", editId)
+            error = updateError
         } else {
-            await supabase.from("properties").insert([payload])
+            const { error: insertError } = await supabase
+                .from("properties")
+                .insert([payload])
+            error = insertError
         }
-        setSaving(false); setShowForm(false); setEditId(null)
+
+        if (error) {
+            console.error("Erreur Supabase :", error)
+            alert(`Erreur : ${error.message}`)
+            setSaving(false)
+            return
+        }
+
+        setSaving(false)
+        setShowForm(false)
+        setEditId(null)
         loadProperties()
     }
 
     async function handleDelete(id: string) {
         await supabase.from("properties").delete().eq("id", id)
-        setDeleteId(null); loadProperties()
+        setDeleteId(null)
+        loadProperties()
     }
 
     async function toggleAvailable(p: Property) {
@@ -112,7 +148,6 @@ export default function AdminBiens() {
 
     return (
         <div className="p-6 md:p-8 space-y-6">
-
             {/* Header */}
             <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
                 <div>
@@ -175,7 +210,7 @@ export default function AdminBiens() {
                         <table className="w-full">
                             <thead>
                                 <tr className="border-b border-border bg-background">
-                                    {["Bien", "Type", "Prix", "Caract.", "Statut", "Actions"].map((h) => (
+                                    {["Bien", "Type", "Prix", "Caract", "Statut", "Actions"].map((h) => (
                                         <th key={h} className="text-left px-6 py-3 text-xs uppercase tracking-widest text-muted-foreground">
                                             {h}
                                         </th>
@@ -214,7 +249,7 @@ export default function AdminBiens() {
                                             <p className="text-sm text-red font-medium">{p.price_label || `${p.price.toLocaleString("fr-FR")} FCFA`}</p>
                                         </td>
                                         <td className="px-6 py-4">
-                                            <p className="text-xs text-muted-foreground">{p.beds}ch · {p.baths}sdb · {p.area}m²</p>
+                                            <p className="text-xs text-muted-foreground">{p.beds}ch · {p.toilet}wc</p>
                                         </td>
                                         <td className="px-6 py-4">
                                             <div className="flex items-center gap-2">
@@ -269,12 +304,11 @@ export default function AdminBiens() {
                 )}
             </div>
 
-            {/* ─── Modal Formulaire ─── */}
+            {/* Modal Formulaire */}
             {showForm && (
                 <div className="fixed inset-0 z-50 flex items-start justify-center p-4 md:p-8 overflow-y-auto">
                     <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowForm(false)} />
                     <div className="relative w-full max-w-2xl bg-white border border-border z-10 shadow-2xl my-auto">
-                        {/* Modal Header */}
                         <div className="flex items-center justify-between px-6 py-4 border-b border-border">
                             <div>
                                 <h2 className="text-xl font-serif text-foreground">
@@ -286,7 +320,6 @@ export default function AdminBiens() {
                             </button>
                         </div>
 
-                        {/* Modal Body */}
                         <div className="p-6 space-y-5 max-h-[70vh] overflow-y-auto">
                             <div className="grid md:grid-cols-2 gap-4">
                                 <Field label="Titre *">
@@ -374,7 +407,6 @@ export default function AdminBiens() {
                             </div>
                         </div>
 
-                        {/* Modal Footer */}
                         <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-border">
                             <button onClick={() => setShowForm(false)}
                                 className="px-6 py-2.5 border border-border text-sm text-muted-foreground hover:text-foreground transition-colors">
@@ -390,7 +422,7 @@ export default function AdminBiens() {
                 </div>
             )}
 
-            {/* ─── Modal Suppression ─── */}
+            {/* Modal Suppression */}
             {deleteId && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
                     <div className="absolute inset-0 bg-black/60" onClick={() => setDeleteId(null)} />

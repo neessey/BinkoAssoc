@@ -72,7 +72,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         { href: "/admin/biens", icon: Building2, label: "Biens", badge: 0 },
         { href: "/admin/messages", icon: MessageSquare, label: "Messages", badge: newMessages },
         { href: "/admin/visites", icon: CalendarCheck, label: "Visites", badge: newVisites },
-        { href: "/admin/quartiers", icon: MapPin, label: "Quartiers", badge: 0 },
         { href: "/admin/dossiers", icon: MapPin, label: "Dossiers", badge: 0 },
         { href: "/admin/settings", icon: Settings, label: "Paramètres", badge: 0 },
     ]

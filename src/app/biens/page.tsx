@@ -248,7 +248,7 @@ export default function BiensPage() {
                                             </div>
                                             <div className="flex items-center gap-2">
                                                 <Bath className="w-4 h-4 text-red" />
-                                                <span>{property.baths} Salles de bain</span>
+                                                <span>{property.toilet} Toilettes</span>
                                             </div>
                                             {property.area && (
                                                 <div className="flex items-center gap-2">
