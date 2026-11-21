@@ -1,20 +1,25 @@
 import React from "react"
 import type { Metadata } from 'next'
-import { Cormorant_Garamond, Montserrat } from 'next/font/google'
+import localFont from 'next/font/local'
 import './globals.css'
 import ClientBody from "./ClientBody";
 import { Providers } from "./providers";
 
-
-const cormorant = Cormorant_Garamond({
-    subsets: ["latin"],
-    weight: ["300", "400", "500", "600", "700"],
+// Polices hébergées dans le projet (versions variables, sous-ensemble latin) :
+// le build ne dépend plus de Google Fonts, dont les échecs réseau cassaient le déploiement.
+const cormorant = localFont({
+    src: "./fonts/cormorant-garamond-latin-wght-normal.woff2",
+    weight: "300 700",
+    style: "normal",
+    display: "swap",
     variable: "--font-serif"
 });
 
-const montserrat = Montserrat({
-    subsets: ["latin"],
-    weight: ["300", "400", "500", "600"],
+const montserrat = localFont({
+    src: "./fonts/montserrat-latin-wght-normal.woff2",
+    weight: "300 600",
+    style: "normal",
+    display: "swap",
     variable: "--font-sans"
 });
 
