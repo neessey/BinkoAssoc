@@ -12,22 +12,9 @@ import { cn } from "@/lib/utils"
 import Link from "next/link"
 import { useSearchParams } from "next/navigation"
 import { Suspense } from "react"
-import { createClient } from "@supabase/supabase-js"
-
-const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-)
-
-interface Property {
-    id: string
-    title: string
-    location: string
-    type: string
-    price_label: string | null
-    price: number
-    thumbnail: string | null
-}
+import { listPropertySummaries, submitDossier } from "@/app/actions/public"
+import { Honeypot, readHoneypot } from "@/components/honeypot"
+import type { PropertySummary as Property } from "@/types/database"
 
 type SubmitStatus = "idle" | "loading" | "success" | "error"
 
@@ -104,12 +91,7 @@ function DossierContent() {
 
     useEffect(() => {
         async function load() {
-            const { data } = await supabase
-                .from("properties")
-                .select("id, title, location, type, price_label, price, thumbnail")
-                .eq("available", true)
-                .order("title")
-            setProperties((data as Property[]) || [])
+            setProperties(await listPropertySummaries())
         }
         load()
     }, [])
@@ -160,14 +142,13 @@ function DossierContent() {
         const selectedProp = preSelected || properties.find(p => p.id === form.property_id)
         const docsChecked  = currentDocs.filter(d => checkedDocs.includes(d.id)).map(d => d.label).join(" | ")
         try {
-            const { error } = await supabase.from("dossiers").insert([{
-                nom: form.nom.trim(), prenom: form.prenom.trim(),
-                email: form.email.trim(), telephone: form.telephone.trim(),
+            const result = await submitDossier({
+                nom: form.nom, prenom: form.prenom,
+                email: form.email, telephone: form.telephone,
                 nationalite: form.nationalite || null,
                 situation_familiale: form.situation_familiale || null,
                 type_demande: form.type_demande,
                 property_id:   selectedProp?.id || null,
-                property_name: selectedProp ? `${selectedProp.title} — ${selectedProp.location}` : null,
                 profession: form.profession || null, employeur: form.employeur || null,
                 revenu_mensuel: form.revenu_mensuel || null, anciennete: form.anciennete || null,
                 garant_nom: form.garant_nom || null, garant_telephone: form.garant_telephone || null,
@@ -177,9 +158,9 @@ function DossierContent() {
                     `Profil : ${DOCS_CONFIG[form.type_profil as keyof typeof DOCS_CONFIG]?.label || ""}`,
                     `Documents cochés : ${docsChecked}`,
                 ].filter(Boolean).join("\n\n"),
-                status: "en_attente",
-            }])
-            if (error) { setErrorMsg("Une erreur est survenue."); setSubmitStatus("error"); return }
+                website: readHoneypot(e),
+            })
+            if (!result.success) { setErrorMsg(result.error); setSubmitStatus("error"); return }
             setSubmitStatus("success")
         } catch {
             setErrorMsg("Erreur de connexion.")
@@ -319,7 +300,8 @@ function DossierContent() {
                             </div>
                         )}
 
-                        <form onSubmit={handleSubmit}>
+                        <form onSubmit={handleSubmit} className="relative">
+                            <Honeypot />
 
                             {/* ── Étape 1 : Identité ── */}
                             <div className={cn(currentStep === 1 ? "block" : "hidden")}>

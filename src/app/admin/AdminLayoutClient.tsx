@@ -5,18 +5,15 @@
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { signOut } from "next-auth/react"
 import {
     LayoutDashboard, Building2, MessageSquare, CalendarCheck,
-    MapPin, Settings, LogOut, Menu, X, ChevronRight, Bell,
+    FileText, Settings, LogOut, Menu, X, ChevronRight, Bell,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { createClient } from "@supabase/supabase-js"
+import { adminCounts } from "@/app/actions/admin"
+import { logoutAdmin } from "@/lib/admin-client"
 
-const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-)
+const signOut = (_opts?: { callbackUrl?: string }) => logoutAdmin("/")
 
 // Initiales à partir de l'email (ex: "admin@binko.ci" → "A")
 function getInitial(email: string) {
@@ -38,42 +35,22 @@ export default function AdminLayoutClient({
 
     // ── Charger les compteurs ──────────────────────────────────
     async function loadCounts() {
-        const [{ count: msgCount }, { count: visitCount }] = await Promise.all([
-            supabase
-                .from("contact_messages")
-                .select("*", { count: "exact", head: true })
-                .eq("status", "nouveau"),
-            supabase
-                .from("visit_requests")
-                .select("*", { count: "exact", head: true })
-                .eq("status", "en_attente"),
-        ])
-        setNewMessages(msgCount || 0)
-        setNewVisites(visitCount || 0)
+        try {
+            const counts = await adminCounts()
+            setNewMessages(counts.messages)
+            setNewVisites(counts.visits)
+        } catch {
+            /* réseau momentanément indisponible */
+        }
     }
 
     useEffect(() => {
         loadCounts()
+        // Rafraîchissement toutes les 30 s + à chaque changement de page
         const interval = setInterval(loadCounts, 30_000)
-
-        const msgSub = supabase
-            .channel("messages-changes")
-            .on("postgres_changes", { event: "INSERT", schema: "public", table: "contact_messages" }, loadCounts)
-            .on("postgres_changes", { event: "UPDATE", schema: "public", table: "contact_messages" }, loadCounts)
-            .subscribe()
-
-        const visitSub = supabase
-            .channel("visits-changes")
-            .on("postgres_changes", { event: "INSERT", schema: "public", table: "visit_requests" }, loadCounts)
-            .on("postgres_changes", { event: "UPDATE", schema: "public", table: "visit_requests" }, loadCounts)
-            .subscribe()
-
-        return () => {
-            clearInterval(interval)
-            supabase.removeChannel(msgSub)
-            supabase.removeChannel(visitSub)
-        }
-    }, [])
+        return () => clearInterval(interval)
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [pathname])
 
     const totalNew = newMessages + newVisites
 
@@ -82,8 +59,7 @@ export default function AdminLayoutClient({
         { href: "/admin/biens", icon: Building2, label: "Biens", badge: 0 },
         { href: "/admin/messages", icon: MessageSquare, label: "Messages", badge: newMessages },
         { href: "/admin/visites", icon: CalendarCheck, label: "Visites", badge: newVisites },
-        { href: "/admin/quartiers", icon: MapPin, label: "Quartiers", badge: 0 },
-        { href: "/admin/dossiers", icon: MapPin, label: "Dossiers", badge: 0 },
+        { href: "/admin/dossiers", icon: FileText, label: "Dossiers", badge: 0 },
         { href: "/admin/settings", icon: Settings, label: "Paramètres", badge: 0 },
     ]
 

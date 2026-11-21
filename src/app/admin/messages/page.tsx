@@ -6,16 +6,9 @@ import {
     MessageSquare, Loader2, Mail, Phone, Clock,
     Trash2, Search, X, CheckCircle, AlertCircle
 } from "lucide-react"
-import { createClient } from "@supabase/supabase-js"
-import type { ContactMessage } from "@/types/database"
+import type { ContactMessage, MessageStatus } from "@/types/database"
 import { cn } from "@/lib/utils"
-
-const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-)
-
-type MessageStatus = "nouveau" | "lu" | "traité" | "archivé"
+import { adminDeleteMessage, adminListMessages, adminUpdateMessageStatus } from "@/app/actions/admin"
 
 const statusConfig: Record<MessageStatus, { label: string; cls: string }> = {
     nouveau: { label: "Nouveau", cls: "bg-red/10 text-red border border-red/20" },
@@ -55,15 +48,10 @@ export default function AdminMessages() {
 
     const load = useCallback(async () => {
         setLoading(true)
-        const { data, error } = await supabase
-            .from("contact_messages")
-            .select("*")
-            .order("created_at", { ascending: false })
-
-        if (error) {
-            showToast("Erreur de chargement : " + error.message, "error")
-        } else {
-            setMessages((data as ContactMessage[]) || [])
+        try {
+            setMessages(await adminListMessages())
+        } catch {
+            showToast("Erreur de chargement des messages.", "error")
         }
         setLoading(false)
     }, [])
@@ -81,14 +69,11 @@ export default function AdminMessages() {
 
     async function updateStatus(id: string, status: MessageStatus) {
         setUpdating(true)
-        const { error } = await supabase
-            .from("contact_messages")
-            .update({ status })
-            .eq("id", id)
+        const result = await adminUpdateMessageStatus(id, status)
         setUpdating(false)
 
-        if (error) {
-            showToast("Erreur : " + error.message, "error")
+        if (!result.success) {
+            showToast(result.error, "error")
             return
         }
 
@@ -108,12 +93,12 @@ export default function AdminMessages() {
 
     async function handleDelete(id: string) {
         setDeleting(true)
-        const { error } = await supabase.from("contact_messages").delete().eq("id", id)
+        const result = await adminDeleteMessage(id)
         setDeleting(false)
         setDeleteId(null)
 
-        if (error) {
-            showToast("Erreur suppression : " + error.message, "error")
+        if (!result.success) {
+            showToast(result.error, "error")
             return
         }
 

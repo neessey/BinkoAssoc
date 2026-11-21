@@ -8,8 +8,8 @@ import {
     MapPin
 } from "lucide-react"
 import Link from "next/link"
-import { supabase } from "@/lib/supabase"
-import type { Property, ContactMessage, VisitRequest } from "@/types/database"
+import type { Property, ContactMessage, VisitRequest, Dossier as FullDossier } from "@/types/database"
+import { adminListDossiers, adminListMessages, adminListProperties, adminListVisits } from "@/app/actions/admin"
 
 // ─── Types ────────────────────────────────────────────────────
 interface Stats {
@@ -22,13 +22,7 @@ interface Stats {
     propertiesByType: { location: number; vente: number; meuble: number }
 }
 
-// minimal dossier type used in this component
-interface Dossier {
-    id: string | number
-    name: string
-    email: string
-    status?: string
-}
+type Dossier = FullDossier & { name?: string }
 
 // ─── Composants ───────────────────────────────────────────────
 
@@ -90,22 +84,13 @@ export default function AdminDashboard() {
     useEffect(() => {
         async function loadAll() {
             setLoading(true)
-            const [
-                { data: allProps },
-                { data: msgs },
-                { data: visits },
-                { data: dossiers },
-            ] = await Promise.all([
-                supabase.from("properties").select("*").order("created_at", { ascending: false }),
-                supabase.from("contact_messages").select("*").order("created_at", { ascending: false }),
-                supabase.from("visit_requests").select("*").order("created_at", { ascending: false }),
-                supabase.from("dossiers").select("*").order("created_at", { ascending: false }),
+            const [props, messages, visitList, rawDossiers] = await Promise.all([
+                adminListProperties(),
+                adminListMessages(),
+                adminListVisits(),
+                adminListDossiers(),
             ])
-
-            const props = allProps as Property[] || []
-            const messages = msgs as ContactMessage[] || []
-            const visitList = visits as VisitRequest[] || []
-            const dossierList = dossiers as Dossier[] || []
+            const dossierList: Dossier[] = rawDossiers.map(d => ({ ...d, name: `${d.prenom} ${d.nom}`.trim() }))
 
             setStats({
                 totalProperties: props.length,

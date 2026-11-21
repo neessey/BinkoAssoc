@@ -1,0 +1,12 @@
+rules_version = '2';
+
+// Aucun accès direct à Firestore depuis le navigateur.
+// Toutes les lectures/écritures passent par le serveur Next.js (Firebase Admin SDK),
+// qui valide les données et vérifie le rôle admin.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

@@ -6,9 +6,12 @@ import {
     Plus, Search, Edit2, Trash2, Eye, EyeOff, Star,
     Loader2, X, Save, MapPin, Building2,
 } from "lucide-react"
-import { supabase } from "@/lib/supabase"
 import type { Property, PropertyType } from "@/types/database"
 import { cn } from "@/lib/utils"
+import {
+    adminDeleteProperty, adminListProperties, adminSaveProperty, adminSetPropertyFlags,
+} from "@/app/actions/admin"
+import { ImageUpload } from "@/components/admin/image-upload"
 
 const typeOptions: { value: PropertyType | "all"; label: string }[] = [
     { value: "all", label: "Tous" },
@@ -21,7 +24,8 @@ const typeOptions: { value: PropertyType | "all"; label: string }[] = [
 const getEmptyForm = () => ({
     title: "", description: "", location: "", quartier: "",
     type: "location" as PropertyType, price: "", price_label: "",
-    beds: "", baths: "", room: "", kitchen: "", toilet: "", parking: "", balcon: "", thumbnail: "", featured: false, available: true,
+    beds: "", baths: "", room: "", kitchen: "", toilet: "", parking: "", balcon: "", thumbnail: "",
+    images: [] as string[], featured: false, available: true,
 })
 
 export default function AdminBiens() {
@@ -37,9 +41,11 @@ export default function AdminBiens() {
 
     async function loadProperties() {
         setLoading(true)
-        const { data } = await supabase
-            .from("properties").select("*").order("created_at", { ascending: false })
-        setProperties((data as Property[]) || [])
+        try {
+            setProperties(await adminListProperties())
+        } catch {
+            alert("Erreur de chargement des biens.")
+        }
         setLoading(false)
     }
 
@@ -64,6 +70,7 @@ export default function AdminBiens() {
             quartier: p.quartier || "", type: p.type, price: String(p.price),
             price_label: p.price_label || "", beds: String(p.beds), baths: String(p.baths),
             thumbnail: p.thumbnail || "",
+            images: p.images.length ? p.images : (p.thumbnail ? [p.thumbnail] : []),
             room: String(p.room || ""), kitchen: String(p.kitchen || ""), toilet: String(p.toilet || ""),
             parking: String(p.parking || ""), balcon: String(p.balcon || ""),
             featured: p.featured, available: p.available,
@@ -99,27 +106,15 @@ export default function AdminBiens() {
             parking: Number(form.parking) || 0,
             balcon: Number(form.balcon) || 0,
             thumbnail: form.thumbnail || null,
+            images: form.images,
             featured: form.featured,
             available: form.available,
         }
 
-        let error = null
-        if (editId) {
-            const { error: updateError } = await supabase
-                .from("properties")
-                .update(payload)
-                .eq("id", editId)
-            error = updateError
-        } else {
-            const { error: insertError } = await supabase
-                .from("properties")
-                .insert([payload])
-            error = insertError
-        }
+        const result = await adminSaveProperty(editId, payload)
 
-        if (error) {
-            console.error("Erreur Supabase :", error)
-            alert(`Erreur : ${error.message}`)
+        if (!result.success) {
+            alert(`Erreur : ${result.error}`)
             setSaving(false)
             return
         }
@@ -131,18 +126,19 @@ export default function AdminBiens() {
     }
 
     async function handleDelete(id: string) {
-        await supabase.from("properties").delete().eq("id", id)
+        const result = await adminDeleteProperty(id)
+        if (!result.success) alert(`Erreur : ${result.error}`)
         setDeleteId(null)
         loadProperties()
     }
 
     async function toggleAvailable(p: Property) {
-        await supabase.from("properties").update({ available: !p.available }).eq("id", p.id)
+        await adminSetPropertyFlags(p.id, { available: !p.available })
         loadProperties()
     }
 
     async function toggleFeatured(p: Property) {
-        await supabase.from("properties").update({ featured: !p.featured }).eq("id", p.id)
+        await adminSetPropertyFlags(p.id, { featured: !p.featured })
         loadProperties()
     }
 
@@ -379,14 +375,13 @@ export default function AdminBiens() {
                                         className={inputCls} placeholder="2" />
                                 </Field>
                             </div>
-                            <Field label="URL de l'image principale">
-                                <input value={form.thumbnail} onChange={e => setForm({ ...form, thumbnail: e.target.value })}
-                                    className={inputCls} placeholder="https://..." />
+                            <Field label="Photos du bien">
+                                <ImageUpload
+                                    images={form.images}
+                                    thumbnail={form.thumbnail}
+                                    onChange={({ images, thumbnail }) => setForm(f => ({ ...f, images, thumbnail }))}
+                                />
                             </Field>
-                            {form.thumbnail && (
-                                <div className="aspect-video bg-cover bg-center border border-border"
-                                    style={{ backgroundImage: `url('${form.thumbnail}')` }} />
-                            )}
                             <Field label="Description">
                                 <textarea value={form.description} onChange={e => setForm({ ...form, description: e.target.value })}
                                     rows={3} className={inputCls + " resize-none"} placeholder="Décrivez le bien..." />

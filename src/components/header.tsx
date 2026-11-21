@@ -5,7 +5,6 @@ import { useState, useEffect } from "react"
 import Link from "next/link"
 import { Menu, X, Phone, Mail } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
 
 const navigation = [
@@ -21,7 +20,6 @@ const navigation = [
 export function Header() {
     const [isScrolled, setIsScrolled] = useState(false)
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
-    const { data: session } = useSession()
     const router = useRouter()
 
     useEffect(() => {
@@ -70,10 +68,10 @@ export function Header() {
                         </a>
                     </div>
                     <button
-                        onClick={() => router.push(session ? "/admin" : "/login")}
+                        onClick={() => router.push("/admin")}
                         className="text-foreground hover:text-red transition-colors font-(--font-sans) text-xs tracking-wider uppercase"
                     >
-                        {session ? "Admin ↗" : "Espace Admin"}
+                        Espace Admin
                     </button>
                 </div>
             </div>

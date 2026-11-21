@@ -1,11 +1,10 @@
 "use client"
 import { useState } from "react"
-import { signIn } from "next-auth/react"
-import { useRouter } from "next/navigation"
+import { signInWithEmailAndPassword, signOut } from "firebase/auth"
 import { Lock, Mail } from "lucide-react"
+import { clientAuth } from "@/lib/firebase/client"
 
 export default function LoginPage() {
-    const router = useRouter()
     const [error, setError] = useState("")
     const [loading, setLoading] = useState(false)
 
@@ -15,17 +14,37 @@ export default function LoginPage() {
         setError("")
 
         const fd = new FormData(e.currentTarget)
-        const result = await signIn("credentials", {
-            email: fd.get("email"),
-            password: fd.get("password"),
-            redirect: false,
-        })
+        const email = String(fd.get("email") ?? "").trim()
+        const password = String(fd.get("password") ?? "")
 
-        setLoading(false)
-        if (result?.error) {
-            setError("Email ou mot de passe incorrect.")
-        } else {
-            router.push("/admin")
+        try {
+            const auth = await clientAuth()
+            const cred = await signInWithEmailAndPassword(auth, email, password)
+            const idToken = await cred.user.getIdToken(true)
+
+            const res = await fetch("/api/session", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ idToken }),
+            })
+
+            if (!res.ok) {
+                await signOut(auth)
+                setError(res.status === 403 ? "Ce compte n'a pas accès à l'administration." : "Connexion refusée.")
+                setLoading(false)
+                return
+            }
+
+            // Rechargement complet pour que le serveur lise le nouveau cookie.
+            window.location.href = "/admin"
+        } catch (err) {
+            const code = (err as { code?: string }).code ?? ""
+            setError(
+                code === "auth/too-many-requests"
+                    ? "Trop de tentatives. Réessayez dans quelques minutes."
+                    : "Email ou mot de passe incorrect."
+            )
+            setLoading(false)
         }
     }
 
@@ -48,6 +67,7 @@ export default function LoginPage() {
                             name="email"
                             type="email"
                             required
+                            autoComplete="username"
                             placeholder="Email"
                             className="w-full pl-10 pr-4 py-3 border border-border bg-background text-sm
                          focus:outline-none focus:border-red font-(--font-sans) tracking-wide"
@@ -60,6 +80,7 @@ export default function LoginPage() {
                             name="password"
                             type="password"
                             required
+                            autoComplete="current-password"
                             placeholder="Mot de passe"
                             className="w-full pl-10 pr-4 py-3 border border-border bg-background text-sm
                          focus:outline-none focus:border-red font-(--font-sans) tracking-wide"
@@ -67,7 +88,7 @@ export default function LoginPage() {
                     </div>
 
                     {error && (
-                        <p className="text-xs text-red tracking-wide text-center">{error}</p>
+                        <p role="alert" className="text-xs text-red tracking-wide text-center">{error}</p>
                     )}
 
                     <button

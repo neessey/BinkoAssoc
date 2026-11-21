@@ -5,13 +5,8 @@ import React from "react"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { Phone, Mail, MapPin, Clock, Send, ChevronDown, Facebook, Instagram, Linkedin, CheckCircle, AlertCircle, Loader2 } from "lucide-react"
-import { createClient } from "@supabase/supabase-js"
-
-// Client Supabase
-const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-)
+import { submitContactMessage } from "@/app/actions/public"
+import { Honeypot, readHoneypot } from "@/components/honeypot"
 
 const offices = [
     {
@@ -65,24 +60,21 @@ export default function ContactPage() {
         setErrorMsg("")
 
         try {
-            const { error } = await supabase
-                .from("contact_messages")
-                .insert([{
-                    name: formData.name.trim(),
-                    email: formData.email.trim(),
-                    phone: formData.phone.trim() || null,
-                    subject: formData.subject.trim() || null,
-                    message: [
-                        formData.message.trim(),
-                        formData.propertyType ? `Type de bien : ${formData.propertyType}` : null,
-                        formData.budget ? `Budget : ${formData.budget}` : null,
-                    ].filter(Boolean).join("\n\n"),
-                    status: "nouveau",
-                }])
+            const result = await submitContactMessage({
+                name: formData.name,
+                email: formData.email,
+                phone: formData.phone,
+                subject: formData.subject,
+                message: [
+                    formData.message.trim(),
+                    formData.propertyType ? `Type de bien : ${formData.propertyType}` : null,
+                    formData.budget ? `Budget : ${formData.budget}` : null,
+                ].filter(Boolean).join("\n\n"),
+                website: readHoneypot(e),
+            })
 
-            if (error) {
-                console.error("Supabase error:", error)
-                setErrorMsg("Une erreur est survenue. Veuillez réessayer ou nous appeler directement.")
+            if (!result.success) {
+                setErrorMsg(result.error)
                 setFormStatus("error")
                 return
             }
@@ -196,7 +188,8 @@ export default function ContactPage() {
                                 </div>
                             )}
 
-                            <form onSubmit={handleSubmit} className="space-y-6">
+                            <form onSubmit={handleSubmit} className="space-y-6 relative">
+                                <Honeypot />
                                 <div className="grid md:grid-cols-2 gap-6">
                                     <div className="space-y-2">
                                         <label className="text-muted-foreground font-(--font-sans) text-xs tracking-wider uppercase">

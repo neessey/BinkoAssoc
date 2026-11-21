@@ -7,8 +7,9 @@ import {
     ChevronRight, Loader2, AlertCircle, Trash2,
     User, Briefcase, Home, Phone, Mail, MessageSquare, Check
 } from "lucide-react"
-import { createClient } from "@supabase/supabase-js"
 import { cn } from "@/lib/utils"
+import type { Dossier } from "@/types/database"
+import { adminDeleteDossier, adminListDossiers, adminUpdateDossier } from "@/app/actions/admin"
 
 // ─── Parse le champ message composite ─────────────────────────
 function parseMessage(raw: string | null): {
@@ -26,35 +27,6 @@ function parseMessage(raw: string | null): {
     return { messageClient, profil, documents }
 }
 
-const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-)
-
-interface Dossier {
-    id: string
-    created_at: string
-    nom: string
-    prenom: string
-    email: string
-    telephone: string
-    nationalite: string | null
-    situation_familiale: string | null
-    type_demande: "location" | "vente"
-    property_id: string | null
-    property_name: string | null
-    profession: string | null
-    employeur: string | null
-    revenu_mensuel: string | null
-    anciennete: string | null
-    garant_nom: string | null
-    garant_telephone: string | null
-    garant_profession: string | null
-    message: string | null
-    status: "en_attente" | "en_cours" | "validé" | "refusé"
-    note_admin: string | null
-    validated_at: string | null
-}
 
 type Toast = { id: number; message: string; type: "success" | "error" }
 
@@ -85,11 +57,11 @@ export default function AdminDossiersPage() {
 
     const loadDossiers = useCallback(async () => {
         setLoading(true)
-        const { data, error } = await supabase
-            .from("dossiers")
-            .select("*")
-            .order("created_at", { ascending: false })
-        if (!error) setDossiers((data as Dossier[]) || [])
+        try {
+            setDossiers(await adminListDossiers())
+        } catch {
+            showToast("Erreur de chargement des dossiers", "error")
+        }
         setLoading(false)
     }, [])
 
@@ -103,16 +75,9 @@ export default function AdminDossiersPage() {
     // ── Changer le statut ──────────────────────────────────────
     const updateStatus = async (id: string, status: Dossier["status"]) => {
         setSaving(true)
-        const { error } = await supabase
-            .from("dossiers")
-            .update({
-                status,
-                note_admin: noteAdmin || null,
-                validated_at: status === "validé" ? new Date().toISOString() : null,
-            })
-            .eq("id", id)
+        const result = await adminUpdateDossier(id, { status, note_admin: noteAdmin || null })
 
-        if (error) {
+        if (!result.success) {
             showToast("Erreur lors de la mise à jour", "error")
         } else {
             setDossiers(prev => prev.map(d => d.id === id
@@ -133,11 +98,8 @@ export default function AdminDossiersPage() {
     const saveNote = async () => {
         if (!selected) return
         setSaving(true)
-        const { error } = await supabase
-            .from("dossiers")
-            .update({ note_admin: noteAdmin || null })
-            .eq("id", selected.id)
-        if (!error) {
+        const result = await adminUpdateDossier(selected.id, { note_admin: noteAdmin || null })
+        if (result.success) {
             setDossiers(prev => prev.map(d => d.id === selected.id ? { ...d, note_admin: noteAdmin } : d))
             setSelected(prev => prev ? { ...prev, note_admin: noteAdmin } : prev)
             showToast("Note sauvegardée", "success")
@@ -147,8 +109,8 @@ export default function AdminDossiersPage() {
 
     // ── Supprimer ─────────────────────────────────────────────
     const deleteDossier = async (id: string) => {
-        const { error } = await supabase.from("dossiers").delete().eq("id", id)
-        if (!error) {
+        const result = await adminDeleteDossier(id)
+        if (result.success) {
             setDossiers(prev => prev.filter(d => d.id !== id))
             if (selected?.id === id) setSelected(null)
             showToast("Dossier supprimé", "success")

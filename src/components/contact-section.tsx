@@ -2,13 +2,8 @@
 
 import React, { useState } from "react"
 import { Phone, Mail, MapPin, Clock, Send, CheckCircle, AlertCircle } from "lucide-react"
-import { createClient } from "@supabase/supabase-js"
-
-// Client Supabase créé directement ici pour éviter tout problème d'import
-const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-)
+import { submitContactMessage } from "@/app/actions/public"
+import { Honeypot, readHoneypot } from "@/components/honeypot"
 
 type FormState = "idle" | "loading" | "success" | "error"
 
@@ -25,25 +20,17 @@ export function ContactSection() {
         setErrorMsg("")
 
         try {
-            const { error } = await supabase
-                .from("contact_messages")
-                .insert([{
-                    name: formData.name.trim(),
-                    email: formData.email.trim(),
-                    phone: formData.phone.trim() || null,
-                    subject: formData.subject.trim() || null,
-                    message: formData.message.trim(),
-                    status: "nouveau",
-                }])
+            const result = await submitContactMessage({
+                name: formData.name,
+                email: formData.email,
+                phone: formData.phone,
+                subject: formData.subject,
+                message: formData.message,
+                website: readHoneypot(e),
+            })
 
-            if (error) {
-                console.error("Supabase error:", error)
-                // Message d'erreur spécifique selon le code
-                if (error.code === "42501") {
-                    setErrorMsg("Erreur de permission. Vérifiez la politique RLS dans Supabase (voir solution ci-dessous).")
-                } else {
-                    setErrorMsg(`Erreur: ${error.message}`)
-                }
+            if (!result.success) {
+                setErrorMsg(result.error)
                 setFormState("error")
                 return
             }
@@ -132,7 +119,8 @@ export function ContactSection() {
                             </div>
                         )}
 
-                        <form onSubmit={handleSubmit} className="space-y-6">
+                        <form onSubmit={handleSubmit} className="space-y-6 relative">
+                            <Honeypot />
                             <div className="grid md:grid-cols-2 gap-6">
                                 <div className="space-y-2">
                                     <label className="text-muted-foreground font-(--font-sans) text-xs tracking-wider uppercase">

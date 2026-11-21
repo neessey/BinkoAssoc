@@ -6,16 +6,9 @@ import {
     CalendarCheck, Loader2, Phone, Mail, User,
     CheckCircle, XCircle, Clock, Building2, Trash2, Search, X, AlertCircle
 } from "lucide-react"
-import { createClient } from "@supabase/supabase-js"
-import type { VisitRequest } from "@/types/database"
+import type { VisitRequest, VisitStatus } from "@/types/database"
 import { cn } from "@/lib/utils"
-
-const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-)
-
-type VisitStatus = "en_attente" | "confirmée" | "annulée"
+import { adminDeleteVisit, adminListVisits, adminUpdateVisitStatus } from "@/app/actions/admin"
 
 const statusConfig: Record<VisitStatus, { label: string; cls: string }> = {
     en_attente: { label: "En attente", cls: "bg-amber-500/10 text-amber-600 border border-amber-500/20" },
@@ -66,15 +59,10 @@ export default function AdminVisites() {
 
     const load = useCallback(async () => {
         setLoading(true)
-        const { data, error } = await supabase
-            .from("visit_requests")
-            .select("*")
-            .order("created_at", { ascending: false })
-
-        if (error) {
-            showToast("Erreur de chargement : " + error.message, "error")
-        } else {
-            setVisits((data as VisitRequest[]) || [])
+        try {
+            setVisits(await adminListVisits())
+        } catch {
+            showToast("Erreur de chargement des visites.", "error")
         }
         setLoading(false)
     }, [])
@@ -91,14 +79,11 @@ export default function AdminVisites() {
 
     async function updateStatus(id: string, status: VisitStatus) {
         setUpdating(true)
-        const { error } = await supabase
-            .from("visit_requests")
-            .update({ status })
-            .eq("id", id)
+        const result = await adminUpdateVisitStatus(id, status)
         setUpdating(false)
 
-        if (error) {
-            showToast("Erreur : " + error.message, "error")
+        if (!result.success) {
+            showToast(result.error, "error")
             return
         }
 
@@ -115,12 +100,12 @@ export default function AdminVisites() {
 
     async function handleDelete(id: string) {
         setDeleting(true)
-        const { error } = await supabase.from("visit_requests").delete().eq("id", id)
+        const result = await adminDeleteVisit(id)
         setDeleting(false)
         setDeleteId(null)
 
-        if (error) {
-            showToast("Erreur suppression : " + error.message, "error")
+        if (!result.success) {
+            showToast(result.error, "error")
             return
         }
 

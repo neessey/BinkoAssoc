@@ -7,8 +7,11 @@ import {
     Eye, EyeOff, CheckCircle, Loader2, Phone, MapPin,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { updateAdminPassword } from "@/app/actions/updateAdminPassword"
-import { signOut, useSession } from "next-auth/react"
+import { EmailAuthProvider, reauthenticateWithCredential, updatePassword } from "firebase/auth"
+import { clientAuth } from "@/lib/firebase/client"
+import { logoutAdmin } from "@/lib/admin-client"
+
+const signOut = (_opts?: { callbackUrl?: string }) => logoutAdmin("/")
 
 type Tab = "profil" | "securite" | "site" | "notifications"
 
@@ -140,8 +143,6 @@ function TabSecurite() {
     const [form, setForm] = useState({ current: "", new: "", confirm: "" })
     const [saving, setSaving] = useState(false)
     const [saved, setSaved] = useState(false)
-    const { data: session } = useSession()
-    const adminEmail = session?.user?.email
     const [error, setError] = useState("")
 
     async function handleSubmit(e: React.FormEvent) {
@@ -151,29 +152,45 @@ function TabSecurite() {
             setError("Les mots de passe ne correspondent pas.")
             return
         }
-        if (form.new.length < 8) {
-            setError("Le mot de passe doit faire au moins 8 caractères.")
+        if (form.new.length < 12 || !/[A-Za-z]/.test(form.new) || !/[0-9]/.test(form.new)) {
+            setError("Le mot de passe doit faire au moins 12 caractères, avec des lettres et des chiffres.")
+            return
+        }
+        if (form.new === form.current) {
+            setError("Le nouveau mot de passe doit être différent de l'actuel.")
             return
         }
 
         setSaving(true)
-
-        // Appel à la Server Action
-        const formData = new FormData()
-        formData.append('newPassword', form.new)
-        formData.append('email', adminEmail || '') // ajouter l'email
-        const result = await updateAdminPassword(formData)
-        if (result.error) {
-            setError(result.error)
+        try {
+            const auth = await clientAuth()
+            const user = auth.currentUser
+            if (!user?.email) {
+                setError("Session expirée : reconnectez-vous puis réessayez.")
+                setSaving(false)
+                return
+            }
+            // Firebase exige de reconfirmer le mot de passe actuel avant tout changement.
+            await reauthenticateWithCredential(user, EmailAuthProvider.credential(user.email, form.current))
+            await updatePassword(user, form.new)
+        } catch (err) {
+            const code = (err as { code?: string }).code ?? ""
+            setError(
+                code === "auth/wrong-password" || code === "auth/invalid-credential"
+                    ? "Mot de passe actuel incorrect."
+                    : code === "auth/too-many-requests"
+                        ? "Trop de tentatives. Réessayez plus tard."
+                        : "Impossible de changer le mot de passe."
+            )
             setSaving(false)
             return
         }
 
-        // Succès
+        // Succès : Firebase révoque les sessions existantes → reconnexion avec le nouveau mot de passe.
         setSaving(false)
         setSaved(true)
         setForm({ current: "", new: "", confirm: "" })
-        setTimeout(() => setSaved(false), 3000)
+        setTimeout(() => logoutAdmin("/login"), 1500)
     }
 
     return (
@@ -391,7 +408,6 @@ function TabNotifications() {
 // ─── Page principale ──────────────────────────────────────────
 export default function AdminSettings() {
     const [activeTab, setActiveTab] = useState<Tab>("profil")
-    const { data: session } = useSession()
 
     const tabContent: Record<Tab, React.ReactNode> = {
         profil: <TabProfil />,

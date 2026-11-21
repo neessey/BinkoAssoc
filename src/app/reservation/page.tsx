@@ -13,22 +13,9 @@ import { cn } from "@/lib/utils"
 import Link from "next/link"
 import { useSearchParams } from "next/navigation"
 import { Suspense } from "react"
-import { createClient } from "@supabase/supabase-js"
-
-const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-)
-
-interface Property {
-    id: string
-    title: string
-    location: string
-    thumbnail: string | null
-    type: string
-    price_label: string | null
-    price: number
-}
+import { listPropertySummaries, submitVisitRequest } from "@/app/actions/public"
+import { Honeypot, readHoneypot } from "@/components/honeypot"
+import type { PropertySummary as Property } from "@/types/database"
 
 const timeSlots = [
     "09:00", "09:30", "10:00", "10:30", "11:00", "11:30",
@@ -67,12 +54,7 @@ function ReservationContent() {
     // ── Charger les biens depuis Supabase ──────────────────────
     useEffect(() => {
         async function load() {
-            const { data } = await supabase
-                .from("properties")
-                .select("id, title, location, thumbnail, type, price_label, price")
-                .eq("available", true)
-                .order("title")
-            setProperties((data as Property[]) || [])
+            setProperties(await listPropertySummaries())
             setLoadingProps(false)
         }
         load()
@@ -132,27 +114,22 @@ function ReservationContent() {
         const selectedProperty = preSelected || properties.find(p => p.id === formData.bien)
 
         try {
-            const { error } = await supabase
-                .from("visit_requests")
-                .insert([{
-                    name: `${formData.prenom} ${formData.nom}`.trim(),
-                    email: formData.email.trim(),
-                    phone: formData.telephone.trim() || null,
-                    property_name: selectedProperty
-                        ? `${selectedProperty.title} - ${selectedProperty.location}`
-                        : null,
-                    preferred_date: formData.date || null,
-                    message: [
-                        formData.message?.trim() || null,
-                        `Type de visite : ${visitTypes.find(v => v.id === formData.typeVisite)?.label}`,
-                        `Heure souhaitée : ${formData.heure}`,
-                    ].filter(Boolean).join("\n"),
-                    status: "en_attente",
-                }])
+            const result = await submitVisitRequest({
+                name: `${formData.prenom} ${formData.nom}`.trim(),
+                email: formData.email,
+                phone: formData.telephone,
+                property_id: selectedProperty?.id ?? null,
+                preferred_date: formData.date || null,
+                message: [
+                    formData.message?.trim() || null,
+                    `Type de visite : ${visitTypes.find(v => v.id === formData.typeVisite)?.label}`,
+                    `Heure souhaitée : ${formData.heure}`,
+                ].filter(Boolean).join("\n"),
+                website: readHoneypot(e),
+            })
 
-            if (error) {
-                console.error("Supabase error:", error)
-                setErrorMsg("Une erreur est survenue. Veuillez réessayer ou nous appeler directement.")
+            if (!result.success) {
+                setErrorMsg(result.error)
                 setSubmitStatus("error")
                 return
             }
@@ -304,7 +281,8 @@ function ReservationContent() {
                             </div>
                         )}
 
-                        <form onSubmit={handleSubmit}>
+                        <form onSubmit={handleSubmit} className="relative">
+                            <Honeypot />
 
                             {/* ── Étape 1 : Coordonnées ── */}
                             <div className={cn("transition-all duration-500", currentStep === 1 ? "block" : "hidden")}>

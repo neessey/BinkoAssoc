@@ -4,101 +4,48 @@
 
 
 :root {
-    /* Elegant Dark with Red Accents Theme */
-    --background: #fffdfd;
-    --foreground: #0a0a0a;
-    --card: #fafafa;
-    --card-foreground: #141414;
-    --popover: #fafafa;
-    --popover-foreground: #141414;
-    --primary: #dc2626;
-    --primary-foreground: #fafafa;
-    --secondary: #1a1a1a;
-    --secondary-foreground: #fafafa;
-    --muted: #1f1f1f;
-    --muted-foreground: #a1a1a1;
-    --accent: #dc2626;
-    --accent-foreground: #fafafa;
-    --destructive: #dc2626;
-    --destructive-foreground: #fafafa;
-    --border: #2a2a2a;
-    --input: #2a2a2a;
-    --ring: #dc2626;
-    --chart-1: #dc2626;
-    --chart-2: #991b1b;
-    --chart-3: #ef4444;
-    --chart-4: #fca5a5;
-    --chart-5: #3d3d3d;
+    /* Thème clair — fond blanc, accents rouges.
+       Couleurs au format "R G B" pour que Tailwind gère l'opacité (ex: bg-red/10). */
+    color-scheme: light;
+
+    --background: 255 255 255;
+    --foreground: 10 10 10;
+    --card: 250 250 250;
+    --card-foreground: 20 20 20;
+    --popover: 255 255 255;
+    --popover-foreground: 20 20 20;
+    --primary: 220 38 38;
+    --primary-foreground: 250 250 250;
+    --secondary: 245 245 245;
+    --secondary-foreground: 20 20 20;
+    --muted: 244 244 245;
+    --muted-foreground: 115 115 115;
+    --accent: 220 38 38;
+    --accent-foreground: 250 250 250;
+    --destructive: 220 38 38;
+    --destructive-foreground: 250 250 250;
+    --border: 229 229 229;
+    --input: 229 229 229;
+    --ring: 220 38 38;
     --radius: 0.25rem;
-    --sidebar: #0f0f0f;
-    --sidebar-foreground: #fafafa;
-    --sidebar-primary: #dc2626;
-    --sidebar-primary-foreground: #fafafa;
-    --sidebar-accent: #1a1a1a;
-    --sidebar-accent-foreground: #fafafa;
-    --sidebar-border: #2a2a2a;
-    --sidebar-ring: #dc2626;
 
-    /* Custom red colors */
-    --red: #dc2626;
-    --red-light: #ef4444;
-    --red-dark: #991b1b;
-    --cream: #f5f0e8;
-    --charcoal: #1a1a1a;
+    /* Rouge de la marque */
+    --red: 220 38 38;
+    --red-light: 239 68 68;
+    --red-dark: 153 27 27;
 }
 
 
-@Theme {
-    --font-sans: 'Cormorant Garamond', 'Georgia', serif;
-    --font-serif: 'Cormorant Garamond', 'Georgia', serif;
-    --font-mono: 'Geist Mono', 'Geist Mono Fallback';
-    --color-background: var(--background);
-    --color-foreground: var(--foreground);
-    --color-card: var(--card);
-    --color-card-foreground: var(--card-foreground);
-    --color-popover: var(--popover);
-    --color-popover-foreground: var(--popover-foreground);
-    --color-primary: var(--primary);
-    --color-primary-foreground: var(--primary-foreground);
-    --color-secondary: var(--secondary);
-    --color-secondary-foreground: var(--secondary-foreground);
-    --color-muted: var(--muted);
-    --color-muted-foreground: var(--muted-foreground);
-    --color-accent: var(--accent);
-    --color-accent-foreground: var(--accent-foreground);
-    --color-destructive: var(--destructive);
-    --color-destructive-foreground: var(--destructive-foreground);
-    --color-border: var(--border);
-    --color-input: var(--input);
-    --color-ring: var(--ring);
-    --color-chart-1: var(--chart-1);
-    --color-chart-2: var(--chart-2);
-    --color-chart-3: var(--chart-3);
-    --color-chart-4: var(--chart-4);
-    --color-chart-5: var(--chart-5);
-    --radius-sm: calc(var(--radius) - 4px);
-    --radius-md: calc(var(--radius) - 2px);
-    --radius-lg: var(--radius);
-    --radius-xl: calc(var(--radius) + 4px);
-    --color-sidebar: var(--sidebar);
-    --color-sidebar-foreground: var(--sidebar-foreground);
-    --color-sidebar-primary: var(--sidebar-primary);
-    --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-    --color-sidebar-accent: var(--sidebar-accent);
-    --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-    --color-sidebar-border: var(--sidebar-border);
-    --color-sidebar-ring: var(--sidebar-ring);
-}
 
 
 @layer base {
     * {
-        border-color: hsl(var(--border));
+        border-color: rgb(var(--border));
     }
 
     body {
-        background-color: hsl(var(--background));
-        color: hsl(var(--foreground));
+        background-color: rgb(var(--background));
+        color: rgb(var(--foreground));
     }
 
     html {
@@ -112,30 +59,18 @@
 }
 
 ::-webkit-scrollbar-track {
-    background: var(--background);
+    background: rgb(var(--background));
 }
 
 ::-webkit-scrollbar-thumb {
-    background: var(--red);
+    background: rgb(var(--red));
     border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: var(--red-light);
+    background: rgb(var(--red-light));
 }
 
-/* Red text utility */
-.text-red {
-    color: var(--red);
-}
-
-.bg-red {
-    background-color: var(--red);
-}
-
-.border-red {
-    border-color: var(--red);
-}
 
 /* Animations */
 @keyframes fadeInUp {

@@ -1,41 +1,13 @@
 "use client"
 
-import { useState, useEffect, ReactNode } from "react"
+import { useState, useEffect } from "react"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { MapPin, Bed, Bath, Square, Utensils, CarFront, Armchair, ShowerHead, ArrowRight, ChevronDown, X, Loader2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import Link from "next/link"
-import { createClient } from "@supabase/supabase-js"
-
-const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-)
-
-type PropertyType = "location" | "vente" | "meuble"
-
-interface Property {
-    room: ReactNode
-    kitchen: string
-    balcon: string
-    parking: string
-    toilet: string
-    id: string
-    title: string
-    description: string | null
-    location: string
-    quartier: string | null
-    type: PropertyType
-    price: number
-    price_label: string | null
-    beds: number
-    baths: number
-    area: number | null
-    thumbnail: string | null
-    featured: boolean
-    available: boolean
-}
+import { listPublicProperties } from "@/app/actions/public"
+import type { Property } from "@/types/database"
 
 const categoryLabels: Record<string, string> = {
     all: "Tous les biens",
@@ -53,14 +25,7 @@ export default function BiensPage() {
     useEffect(() => {
         async function load() {
             setLoading(true)
-            const { data, error } = await supabase
-                .from("properties")
-                .select("*")
-                .eq("available", true)
-                .order("featured", { ascending: false })
-                .order("created_at", { ascending: false })
-
-            if (!error && data) setProperties(data as Property[])
+            setProperties(await listPublicProperties())
             setLoading(false)
         }
         load()

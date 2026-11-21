@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { MapPin, Bed, Bath, Square, ArrowRight, Loader2 } from "lucide-react"
 import Link from "next/link"
 import { cn } from "@/lib/utils"
-import { getProperties } from "@/lib/supabase"
+import { listPublicProperties } from "@/app/actions/public"
 import type { Property, PropertyType } from "@/types/database"
 
 const categories = [
@@ -25,16 +25,18 @@ export function PropertiesSection() {
     const [properties, setProperties] = useState<Property[]>([])
     const [loading, setLoading] = useState(true)
 
-    // Chargement depuis Supabase à chaque changement de filtre
+    const [allProperties, setAllProperties] = useState<Property[] | null>(null)
+
+    // Chargement unique, puis filtrage local à chaque changement de catégorie
     useEffect(() => {
-        async function load() {
-            setLoading(true)
-            const data = await getProperties({ type: activeCategory })
-            setProperties(data)
-            setLoading(false)
-        }
-        load()
-    }, [activeCategory])
+        listPublicProperties().then(setAllProperties)
+    }, [])
+
+    useEffect(() => {
+        if (!allProperties) return
+        setProperties(activeCategory === "all" ? allProperties : allProperties.filter((p) => p.type === activeCategory))
+        setLoading(false)
+    }, [activeCategory, allProperties])
 
     return (
         <section id="biens" className="py-24 md:py-32 bg-card">
