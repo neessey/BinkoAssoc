@@ -116,7 +116,7 @@ export default function ServicesPage() {
             <Header />
 
             {/* Hero Section */}
-            <section className="relative h-[70vh] min-h-125 flex items-center justify-center overflow-hidden">
+            <section className="relative min-h-[70vh] pt-44 pb-24 flex items-center justify-center overflow-hidden">
                 <div
                     className="absolute inset-0 bg-cover bg-center"
                     style={{

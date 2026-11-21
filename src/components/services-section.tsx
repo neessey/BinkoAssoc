@@ -89,7 +89,8 @@ export function ServicesSection() {
                                         className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-110"
                                         style={{ backgroundImage: `url('${service.image}')` }}
                                     />
-                                    <div className="absolute inset-0 bg-white/30" />
+                                    {/* Voile blanc dégradé (comme les cartes quartiers) pour lire le texte foncé */}
+                                    <div className="absolute inset-0 bg-gradient-to-t from-white via-white/80 to-white/30" />
                                 </div>
 
                                 {/* Content */}
@@ -100,11 +101,11 @@ export function ServicesSection() {
                                         {service.subtitle}
                                     </span>
 
-                                    <h3 className="text-3xl md:text-4xl font-serif text-background mb-4">
+                                    <h3 className="text-3xl md:text-4xl font-serif text-foreground mb-4">
                                         {service.title}
                                     </h3>
 
-                                    <p className="text-background font-[var(--font-sans)] leading-relaxed mb-6">
+                                    <p className="text-foreground font-[var(--font-sans)] leading-relaxed mb-6">
                                         {service.description}
                                     </p>
                                 </div>

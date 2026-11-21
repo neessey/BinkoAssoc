@@ -224,7 +224,7 @@ function DossierContent() {
             <Header />
 
             {/* Hero */}
-            <section className="relative h-[45vh] min-h-80 flex items-center justify-center overflow-hidden">
+            <section className="relative min-h-[45vh] pt-44 pb-12 flex items-center justify-center overflow-hidden">
                 <div className="absolute inset-0 bg-cover bg-center"
                     style={{ backgroundImage: `url('https://images.unsplash.com/photo-1560520653-9e0e4c89eb11?q=80&w=2073&auto=format&fit=crop')` }} />
                 <div className="absolute inset-0 bg-background/80" />

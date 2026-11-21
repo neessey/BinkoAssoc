@@ -4,11 +4,11 @@ import Link from "next/link"
 import { Facebook, Instagram, Linkedin, Twitter, Mail, Phone, MapPin, ArrowUp } from "lucide-react"
 
 const quickLinks = [
-    { name: "Accueil", href: "#accueil" },
-    { name: "À Propos", href: "#apropos" },
-    { name: "Services", href: "#services" },
-    { name: "Nos Biens", href: "#biens" },
-    { name: "Contact", href: "#contact" },
+    { name: "Accueil", href: "/" },
+    { name: "À Propos", href: "/a-propos" },
+    { name: "Services", href: "/services" },
+    { name: "Nos Biens", href: "/biens" },
+    { name: "Contact", href: "/contact" },
 ]
 
 const services = [

@@ -45,7 +45,7 @@ export function HeroSection() {
                     {/* CTA Buttons */}
                     <div className="flex flex-col sm:flex-row items-center justify-center gap-4 opacity-0 animate-fade-in-up animation-delay-600">
                         <Link
-                            href="#biens"
+                            href="/biens"
                             className="px-8 py-4 bg-red text-primary-foreground font-(--font-sans)  text-xs tracking-widest uppercase hover:bg-red/90 transition-all duration-300"
                         >
                             Découvrir nos biens

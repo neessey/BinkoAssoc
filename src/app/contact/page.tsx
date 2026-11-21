@@ -100,7 +100,7 @@ export default function ContactPage() {
             <Header />
 
             {/* Hero Section */}
-            <section className="relative h-[60vh] min-h-100 flex items-center justify-center overflow-hidden">
+            <section className="relative min-h-[60vh] pt-44 pb-16 flex items-center justify-center overflow-hidden">
                 <div
                     className="absolute inset-0 bg-cover bg-center"
                     style={{

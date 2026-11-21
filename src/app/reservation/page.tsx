@@ -205,7 +205,7 @@ function ReservationContent() {
             <Header />
 
             {/* Hero */}
-            <section className="relative h-[50vh] min-h-100 flex items-center justify-center overflow-hidden">
+            <section className="relative min-h-[50vh] pt-44 pb-16 flex items-center justify-center overflow-hidden">
                 <div className="absolute inset-0 bg-cover bg-center"
                     style={{ backgroundImage: `url('${preSelected?.thumbnail || "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=2070&auto=format&fit=crop"}')` }} />
                 <div className="absolute inset-0 bg-white/30" />
